@@ -30,9 +30,71 @@ class RecipesTests(APITestCase):
         self.assertEqual(len(recipe_data['ingredients']), 0)
 
     def Get_All_Recipes_Should_Work(self):
+        # Act
         response = self.client.get(reverse('recipe-list'))
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
         self.assert_recipe1_is_correct(response.data[0])
         self.assert_recipe2_is_correct(response.data[1])
+
+    def Get_Recipe_Detail_Should_Work(self):
+        # Arrange
+        recipe = Recipe.objects.filter(name='TestName1').get()
+
+        # Act
+        response = self.client.get(reverse('recipe-detail', args=[recipe.id]))
+
+        # Assert
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assert_recipe1_is_correct(response.data)
+
+    def Update_Recipe_Should_Work(self):
+        # Arrange
+        recipe = Recipe.objects.filter(name='TestName1').get()
+        data = {'name': 'ChangedName', 'description': 'ChangedDescription',
+                'ingredients': [{'name': 'ChangedIngredient'}]}
+
+        # Act
+        response = self.client.put(reverse('recipe-detail', args=[recipe.id]), data, format='json')
+
+        # Assert
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_recipe = Recipe.objects.filter(name='ChangedName').get()
+
+        self.assertEqual(updated_recipe.description, 'ChangedDescription')
+        ingredients = updated_recipe.ingredients.all()
+        self.assertEqual(len(ingredients), 1)
+        self.assertEqual(ingredients[0].name, 'ChangedIngredient')
+
+    def Delete_Recipe_Should_Work(self):
+        # Arrange
+        recipe = Recipe.objects.filter(name='TestName1').get()
+
+        # Act
+        response = self.client.delete(reverse('recipe-detail', args=[recipe.id]))
+
+        # Assert
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        result = Recipe.objects.filter(name='TestName1')
+
+        self.assertEqual(result.count(), 0)
+
+    def Create_Recipe_Should_Work(self):
+        # Arrange
+        data = {'name': 'NewName', 'description': 'NewDescription',
+                'ingredients': [{'name': 'NewIngredient1'}, {'name': 'NewIngredient2'}]}
+
+        # Act
+        response = self.client.post(reverse('recipe-list'), data, format='json')
+
+        # Assert
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        recipe = Recipe.objects.filter(name='NewName').get()
+
+        self.assertEqual(recipe.description, 'NewDescription')
+        ingredients = recipe.ingredients.all()
+        self.assertEqual(len(ingredients), 2)
+        self.assertEqual(ingredients[0].name, 'NewIngredient1')
+        self.assertEqual(ingredients[1].name, 'NewIngredient2')
