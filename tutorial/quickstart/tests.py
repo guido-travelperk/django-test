@@ -29,7 +29,7 @@ class RecipesTests(APITestCase):
         self.assertEqual(recipe_data['description'], 'TestDescription2')
         self.assertEqual(len(recipe_data['ingredients']), 0)
 
-    def Get_All_Recipes_Should_Work(self):
+    def test_get_all_recipes_should_work(self):
         # Act
         response = self.client.get(reverse('recipe-list'))
 
@@ -39,7 +39,7 @@ class RecipesTests(APITestCase):
         self.assert_recipe1_is_correct(response.data[0])
         self.assert_recipe2_is_correct(response.data[1])
 
-    def Get_Recipe_Detail_Should_Work(self):
+    def test_get_recipe_detail_should_work(self):
         # Arrange
         recipe = Recipe.objects.filter(name='TestName1').get()
 
@@ -50,7 +50,7 @@ class RecipesTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assert_recipe1_is_correct(response.data)
 
-    def Update_Recipe_Should_Work(self):
+    def test_update_recipe_should_work(self):
         # Arrange
         recipe = Recipe.objects.filter(name='TestName1').get()
         data = {'name': 'ChangedName', 'description': 'ChangedDescription',
@@ -68,7 +68,7 @@ class RecipesTests(APITestCase):
         self.assertEqual(len(ingredients), 1)
         self.assertEqual(ingredients[0].name, 'ChangedIngredient')
 
-    def Delete_Recipe_Should_Work(self):
+    def test_delete_recipe_should_work(self):
         # Arrange
         recipe = Recipe.objects.filter(name='TestName1').get()
 
@@ -81,7 +81,7 @@ class RecipesTests(APITestCase):
 
         self.assertEqual(result.count(), 0)
 
-    def Create_Recipe_Should_Work(self):
+    def test_create_recipe_should_work(self):
         # Arrange
         data = {'name': 'NewName', 'description': 'NewDescription',
                 'ingredients': [{'name': 'NewIngredient1'}, {'name': 'NewIngredient2'}]}
